@@ -122,6 +122,28 @@ public Action TF2_OnTakeDamage(int victim, int &attacker, int &inflictor, float 
 	}
 	return Plugin_Continue;
 }
+public void OnClientDisconnect(int client)
+{
+	/*
+	int playersTouchingGas;
+	if(!g_smPlayersTouchingGas.GetValue(sBuffer, playersTouchingGas))
+	return;
+	
+	if(HasFlag(client, playersTouchingGas))
+	{
+		playersTouchingGas = RemoveFlag(client, playersTouchingGas);
+		if(g_iIsTouchingGas[client] <= 0)
+		{
+			g_iIsTouchingGas = 0;
+		}
+		else
+		{
+			g_iIsTouchingGas[client]--;
+		}
+		g_smPlayersTouchingGas.SetValue(sBuffer, playersTouching, false);
+	}
+	*/
+}
 public void OnEntityCreated(int entity, const char[] classname)
 {
     if(strcmp(classname, "tf_gas_manager") == 0)
@@ -237,7 +259,7 @@ bool AddPlayerTouchingGas(int client, int entity)
 	if(!g_smPlayersTouchingGas.GetValue(sBuffer, playersTouchingGas))
 	return false;
 	
-	if(HasFlag(client, playersTouchingGas))
+	if(!HasFlag(client, playersTouchingGas))
 	{
 		playersTouchingGas = AddFlag(client, playersTouchingGas);
 		g_iIsTouchingGas[client]++;
