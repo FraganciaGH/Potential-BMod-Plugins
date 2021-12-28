@@ -1,4 +1,4 @@
-#define PLUGIN_NAME "Balance Mod Gas Passe Molotovr"
+#define PLUGIN_NAME "Balance Mod Gas Passer Molotov"
 #define PLUGIN_DESCRIPTION "Turns Gas Passer into a molotov"
 #define PLUGIN_AUTHOR "Fragancia"
 #define PLUGIN_VERSION "1.0.0"
