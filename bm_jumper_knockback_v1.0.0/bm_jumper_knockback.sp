@@ -130,7 +130,6 @@ public void CvarChangeHook(ConVar convar, const char[] sOldValue, const char[] s
 
 /* Plugin Exclusive Functions */
 bool IsJumperWeapon(int weapon)
-
 {
     if(!IsValidWeapon(weapon)) 
 	return false;
