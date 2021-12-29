@@ -112,7 +112,7 @@ public Action TF2_OnTakeDamageModifyRulesEx(int victim, int &attacker, int &infl
 			things aren't gonna work!
 		*/
 		float flKnockback = damageforforce;
-		basedamage *= g_cv_flDamagePenalty;
+		damage *= g_cv_flDamagePenalty;
 		damageforforce = flKnockback;
 		
 		return Plugin_Changed;
