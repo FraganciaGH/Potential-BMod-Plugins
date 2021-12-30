@@ -173,7 +173,7 @@ public void OnEntityDestroyed(int entity)
 	char sBuffer[32];
 	GetEntityClassname(entity, sBuffer, sizeof(sBuffer));
 	
-	if(strcmp(classname, "tf_gas_manager") == 0)
+	if(strcmp(sBuffer, "tf_gas_manager") == 0)
 	{
 		int playersTouchingGas = GetPlayersTouchingGas(entity);
 		for(int client = 1; client <= MaxClients; client++)
@@ -182,7 +182,7 @@ public void OnEntityDestroyed(int entity)
 			{
 				if(g_iIsTouchingGas[client] <= 0)
 				{
-					g_iIsTouchingGas = 0;
+					g_iIsTouchingGas[client] = 0;
 				}
 				else
 				{
@@ -263,7 +263,7 @@ bool AddPlayerTouchingGas(int client, int entity)
 	{
 		playersTouchingGas = AddFlag(client, playersTouchingGas);
 		g_iIsTouchingGas[client]++;
-		return g_smPlayersTouchingGas.SetValue(sBuffer, playersTouching, false);
+		return g_smPlayersTouchingGas.SetValue(sBuffer, playersTouchingGas, false);
 	}
 	
 	return false;
@@ -283,13 +283,13 @@ bool RemovePlayerTouchingGas(int client, int entity)
 		playersTouchingGas = RemoveFlag(client, playersTouchingGas);
 		if(g_iIsTouchingGas[client] <= 0)
 		{
-			g_iIsTouchingGas = 0;
+			g_iIsTouchingGas[client] = 0;
 		}
 		else
 		{
 			g_iIsTouchingGas[client]--;
 		}
-		return g_smPlayersTouchingGas.SetValue(sBuffer, playersTouching, false);
+		return g_smPlayersTouchingGas.SetValue(sBuffer, playersTouchingGas, false);
 	}
 	
 	return false;
