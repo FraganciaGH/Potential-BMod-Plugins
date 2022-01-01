@@ -94,6 +94,7 @@ public void OnPluginStart()
 
     /* Other */
 	g_smPlayersTouchingGas = new StringMap();
+	
     //RegAdminCmd("sm_", Command_, ADMFLAG_SLAY, "");
     
 
@@ -113,9 +114,9 @@ public Action TF2_OnTakeDamage(int victim, int &attacker, int &inflictor, float 
 		int &damagetype, int &weapon, float damageForce[3], float damagePosition[3],
 		int damagecustom, CritType &critType)
 {
-	if(damagecustom == TF_CUSTOM_BURNING 
-	&& g_iIsTouchingGas[victim] > 0)
+	if(damagecustom == TF_CUSTOM_BURNING && g_iIsTouchingGas[victim] > 0)
 	{
+		if(g_cv_bDebugMode) PrintToChatAll("[OTD] g_iIsTouchingGas counter: %i", g_iIsTouchingGas[victim]);
 		/* Confirm: Does this only make afterburn crit or does it apply to any fire? */
 		critType = CritType_Crit;
 		return Plugin_Changed;
@@ -176,6 +177,8 @@ public void OnEntityDestroyed(int entity)
 	if(strcmp(sBuffer, "tf_gas_manager") == 0)
 	{
 		int playersTouchingGas = GetPlayersTouchingGas(entity);
+		if(playersTouchingGas == -1) return;
+		
 		for(int client = 1; client <= MaxClients; client++)
 		{
 			if(HasFlag(client, playersTouchingGas))
@@ -190,7 +193,10 @@ public void OnEntityDestroyed(int entity)
 				}
 			}
 		}
-		g_smPlayersTouchingGas.Remove(sBuffer);
+		char sEntity[16];
+		IntToString(entity, sEntity, sizeof(sEntity));
+		TrimString(sEntity);
+		g_smPlayersTouchingGas.Remove(sEntity);
 	}
 }
 public Action OnGasStartTouch(int entity, int other)
@@ -200,19 +206,34 @@ public Action OnGasStartTouch(int entity, int other)
     if(IsValidClient(other))
     {
     	// Confirm: Is OwnerEntity the player or the Gas Passer weapon?
+    	// ownerEntity is the player
+
     	int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+    	if(g_cv_bDebugMode) {
+    		char sClassname[32];
+			GetEntityClassname(owner, sClassname, sizeof(sClassname));
+    		PrintToChatAll("OwnerEntity: %i, %s", owner, sClassname);
+    		PrintToChatAll("%N entered cloud", other);
+    	}
     	/*
     	We use a stringmap and make a keyvalue pair
 		for each gas cloud to track players touching them
     	*/
-    	if(AddPlayerTouchingGas(other, entity))
+    	if(other != owner && AddPlayerTouchingGas(other, entity))
     	{
+    		if(g_cv_bDebugMode) {
+    			PrintToChatAll("Applying Gas and igniting %N", other);
+    			PrintToChatAll("[OGST] g_iIsTouchingGas counter: %i", g_iIsTouchingGas[other]);
+    		} 
     		//Apply gas condition if they don't have
-    		if(!TF2_IsPlayerInCondition(other, TFCond_Gas))
-    		TF2_AddCondition(other, TFCond_Gas, g_cv_flGasDuration, entity);
+    		//if(!TF2_IsPlayerInCondition(other, TFCond_Gas))
+    		TF2_AddCondition(other, TFCond_Gas, g_cv_flGasDuration, owner);
     		// Ignite players entering the cloud not already on fire
-    		if(!TF2_IsPlayerInCondition(other, TFCond_OnFire))
-    		TF2_IgnitePlayer(other, owner, g_cv_flFireDuration);
+    		//if(!TF2_IsPlayerInCondition(other, TFCond_OnFire))
+    		//IgnitePlayer doesn't work? Maybe trigger gas another way?
+    		int gasPasser = GetPlayerWeaponSlot(owner, TFWeaponSlot_Secondary);
+    		SDKHooks_TakeDamage(other, entity, owner, 1.0, (DMG_BURN | DMG_PREVENT_PHYSICS_FORCE), gasPasser);
+    		//TF2_MakeBleed(other, owner, 1.0);
     	}
         //PrintToChatAll("Hooked %N EndTouch", other);
         //SDKHook(other, SDKHook_EndTouch, OnPlayerGasEndTouch);
@@ -225,7 +246,14 @@ public Action OnGasEndTouch(int entity, int other)
     //PrintToChatAll("GM ended touching: %i", other);
 	if(IsValidClient(other))
     {
-    	RemovePlayerTouchingGas(other, entity);
+    	int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+    	if(g_cv_bDebugMode) PrintToChatAll("%N left cloud", other);
+    	
+    	if(other != owner && RemovePlayerTouchingGas(other, entity))
+    	{
+    		if(g_cv_bDebugMode) PrintToChatAll("[OGET] g_iIsTouchingGas counter: %i", g_iIsTouchingGas[other]);
+    	}
+    	
     }
     return Plugin_Continue;
 }
@@ -253,8 +281,9 @@ bool AddPlayerTouchingGas(int client, int entity)
 {
 	char sBuffer[16];
 	int playersTouchingGas;
-
+	
 	IntToString(entity, sBuffer, sizeof(sBuffer));
+	TrimString(sBuffer);
 	
 	if(!g_smPlayersTouchingGas.GetValue(sBuffer, playersTouchingGas))
 	return false;
@@ -274,6 +303,7 @@ bool RemovePlayerTouchingGas(int client, int entity)
 	int playersTouchingGas;
 
 	IntToString(entity, sBuffer, sizeof(sBuffer));
+	TrimString(sBuffer);
 	
 	if(!g_smPlayersTouchingGas.GetValue(sBuffer, playersTouchingGas))
 	return false;
@@ -310,6 +340,7 @@ bool SetPlayersTouchingGas(int entity, int playersTouchingGas = 0)
 {
 	char sBuffer[16];
 	IntToString(entity, sBuffer, sizeof(sBuffer));
+	TrimString(sBuffer);
 	
 	return g_smPlayersTouchingGas.SetValue(sBuffer, playersTouchingGas);
 }
