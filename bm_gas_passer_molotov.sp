@@ -9,7 +9,7 @@
 #include <sdkhooks>
 #include <tf2>
 #include <tf2_stocks>
-#include <dhooks>
+//#include <dhooks>
 #include <tf_ontakedamage>
 //#include <tf2condhooks>
 
@@ -114,7 +114,8 @@ public Action TF2_OnTakeDamage(int victim, int &attacker, int &inflictor, float 
 		int &damagetype, int &weapon, float damageForce[3], float damagePosition[3],
 		int damagecustom, CritType &critType)
 {
-	if(damagecustom == TF_CUSTOM_BURNING && g_iIsTouchingGas[victim] > 0)
+	if(damagecustom == TF_CUSTOM_BURNING 
+	&& g_iIsTouchingGas[victim] > 0)
 	{
 		if(g_cv_bDebugMode) PrintToChatAll("[OTD] g_iIsTouchingGas counter: %i", g_iIsTouchingGas[victim]);
 		/* Confirm: Does this only make afterburn crit or does it apply to any fire? */
